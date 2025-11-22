@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkillMatch — Demo AWS</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --surface:#ffffff;
+      --muted:#6b7280;
+      --primary:#0b63c8;
+      --radius:12px;
+      --shadow: 0 10px 30px rgba(15,23,42,0.06);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    }
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#eef3ff 0%,var(--bg) 60%);
+      color:#081025;
+    }
+
+    .container{max-width:1100px;margin:26px auto;padding:18px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:56px;height:56px;border-radius:12px;
+      background:linear-gradient(135deg,#0b63c8,#3b82f6);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-weight:700;font-size:18px;
+    }
+
+    h1{margin:0;font-size:20px}
+    .tagline{font-size:13px;color:#6b7280}
+    .layout{display:grid;grid-template-columns:1fr 350px;gap:20px}
+
+    .card{
+      background:white;padding:18px;border-radius:12px;
+      box-shadow:var(--shadow)
+    }
+    label{display:block;margin-top:10px;font-size:13px;color:#6b7280}
+    input{
+      width:100%;padding:10px;margin-top:4px;border-radius:8px;
+      border:1px solid #e5e7eb
+    }
+
+    .primary{
+      background:#0b63c8;color:white;padding:10px 14px;
+      border-radius:10px;border:0;margin-top:14px;cursor:pointer
+    }
+
+    .ghost{
+      padding:10px;border-radius:10px;border:1px solid #e5e7eb;
+      background:transparent;cursor:pointer
+    }
+
+    .intern-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+
+    .intern{
+      border:1px solid #e5e7eb;padding:12px;border-radius:10px;
+      display:flex;justify-content:space-between;align-items:flex-start
+    }
+
+    .title{font-weight:700}
+    .company{font-size:13px;color:#6b7280}
+    .tag{
+      background:#eef3ff;padding:6px 8px;border-radius:20px;font-size:11px;margin-right:6px
+    }
+
+    .tags{margin-top:8px}
+    .toast{
+      position:fixed;right:20px;bottom:20px;background:black;color:white;
+      padding:12px;border-radius:8px
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <div class="brand">
+    <div class="logo">SM</div>
+    <div>
+      <h1>SkillMatch</h1>
+      <div class="tagline">AWS demo UI</div>
+    </div>
+  </div>
+
+  <button class="ghost" onclick="window.open('https://console.aws.amazon.com','_blank')">AWS Console</button>
+</header>
+
+
+<div class="layout">
+
+<!---------------- MAIN ------------------>
+<main>
+
+  <!-- Profile -->
+  <div class="card">
+    <h2>Create Profile</h2>
+
+    <label>User ID</label>
+    <input id="userId">
+
+    <label>Name</label>
+    <input id="name">
+
+    <label>Skills</label>
+    <input id="skills" placeholder="aws, python">
+
+    <label>Interests</label>
+    <input id="interests" placeholder="cloud, devops">
+
+    <button class="primary" onclick="saveProfile()">Save Profile</button>
+  </div>
+
+
+  <!-- Add Internship -->
+  <div class="card" style="margin-top:18px">
+    <h2>Add Internship</h2>
+
+    <label>Title</label>
+    <input id="ititle">
+
+    <label>Required Skills</label>
+    <input id="iskills">
+
+    <label>Company</label>
+    <input id="icompany">
+
+    <button class="primary" onclick="addIntern()">Add Internship</button>
+  </div>
+
+
+  <!-- Matches -->
+  <div class="card" style="margin-top:18px">
+    <h2>Get Matches</h2>
+
+    <label>User ID</label>
+    <input id="queryUser" placeholder="mahima231">
+
+    <button class="primary" onclick="getMatches()">Get Matches</button>
+
+    <div id="matches" class="intern-list"></div>
+  </div>
+
+</main>
+
+
+<!---------------- SIDE ------------------>
+<aside>
+
+  <!-- Internships -->
+  <div class="card">
+    <h2>Internships</h2>
+
+    <button class="ghost" onclick="loadInterns()">Refresh</button>
+
+    <div id="recent" class="intern-list" style="margin-top:10px"></div>
+  </div>
+
+
+  <!-- Applications -->
+  <div class="card" style="margin-top:18px">
+    <h2>Applications</h2>
+
+    <button class="ghost" onclick="loadApps()">Refresh</button>
+
+    <div id="apps" class="intern-list" style="margin-top:10px"></div>
+  </div>
+
+</aside>
+
+</div>
+</div>
+
+
+<!---------------- SCRIPT ------------------>
+<script>
+
+/* ========== CONFIG ========== */
+const DEMO = true; 
+const API = "https://d35uj9bubc.execute-api.ap-south-1.amazonaws.com/prod";
+
+console.log("AWS BASE URL:", API);
+
+
+/* ========== DEMO DATA ========== */
+const demoInterns = [
+  { internshipId:"int1", title:"Frontend Intern", company:"Microsoft", requiredSkills:["html","css","react"] },
+  { internshipId:"int2", title:"Cloud Intern", company:"AWS", requiredSkills:["lambda","s3","api gateway"] }
+];
+
+const demoApps = [
+  { userId:"mahima231", internshipId:"int1", status:"applied" }
+];
+
+window._demoProfiles = {};
+
+
+
+/* ========== HELPERS ========== */
+function toast(msg){
+  const t=document.createElement("div");
+  t.className="toast";
+  t.innerText=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
+}
+
+function render(list, target){
+  const box=document.getElementById(target);
+  box.innerHTML="";
+  list.forEach(it=>{
+    const el=document.createElement("div");
+    el.className="intern";
+    el.innerHTML=`
+      <div>
+        <div class="title">${it.title}</div>
+        <div class="company">${it.company}</div>
+        <div class="tags">${it.requiredSkills.map(s=>`<span class='tag'>${s}</span>`).join("")}</div>
+      </div>
+      <button class="primary" onclick="apply('${it.internshipId}')">Apply</button>
+    `;
+    box.appendChild(el);
+  });
+}
+
+
+
+/* ========== SAVE PROFILE ========== */
+async function saveProfile(){
+  const userId=document.getElementById("userId").value.trim();
+  const name=document.getElementById("name").value.trim();
+  const skills=document.getElementById("skills").value.split(",").map(s=>s.trim());
+  const interests=document.getElementById("interests").value.split(",").map(s=>s.trim());
+
+  console.log("Calling AWS: POST /profiles");
+  console.log("Payload:", {userId,name,skills,interests});
+
+  if(DEMO){
+    window._demoProfiles[userId] = { userId,name,skills,interests };
+    toast("Profile saved (demo)");
+    return;
+  }
+}
+
+
+
+/* ========== ADD INTERNSHIP ========== */
+async function addIntern(){
+  const title=document.getElementById("ititle").value.trim();
+  const requiredSkills=document.getElementById("iskills").value.split(",").map(s=>s.trim());
+  const company=document.getElementById("icompany").value.trim();
+
+  console.log("Calling AWS: POST /internships");
+  console.log("Payload:", {title,company,requiredSkills});
+
+  if(DEMO){
+    demoInterns.push({internshipId:"d"+Math.random(),title,company,requiredSkills});
+    loadInterns();
+    toast("Internship added (demo)");
+    return;
+  }
+}
+
+
+
+/* ========== LOAD INTERNSHIPS ========== */
+async function loadInterns(){
+  console.log("Calling AWS: GET /internships");
+
+  if(DEMO){
+    render(demoInterns,"recent");
+    return;
+  }
+}
+
+
+
+/* ========== LOAD APPLICATIONS ========== */
+async function loadApps(){
+  console.log("Calling AWS: GET /applications");
+
+  const box=document.getElementById("apps");
+  box.innerHTML="";
+
+  if(DEMO){
+    demoApps.forEach(a=>{
+      const el=document.createElement("div");
+      el.className="intern";
+      el.innerText=`${a.userId} applied to ${a.internshipId}`;
+      box.appendChild(el);
+    });
+    return;
+  }
+}
+
+
+
+/* ========== MATCHING + NO MATCH LOGIC ========== */
+async function getMatches(){
+  const user=document.getElementById("queryUser").value.trim();
+
+  console.log("Calling AWS: GET /match/"+user);
+
+  if(DEMO){
+
+    const profile = window._demoProfiles[user] || {};
+    const skills = (profile.skills || []).map(s=>s.toLowerCase());
+
+    let matched = demoInterns.filter(int =>
+      int.requiredSkills.some(s => skills.includes(s.toLowerCase()))
+    );
+
+    const box = document.getElementById("matches");
+    box.innerHTML = "";
+
+    if(matched.length === 0){
+
+      box.innerHTML = `<div class="company">No exact matches found.</div>`;
+
+      const scored = demoInterns.map(int=>{
+        const common=int.requiredSkills.filter(s=>skills.includes(s.toLowerCase())).length;
+        return {int,score:common};
+      }).sort((a,b)=>b.score - a.score);
+
+      const suggestions = scored.slice(0,3).map(s=>s.int);
+
+      if(suggestions.length){
+        const title=document.createElement("div");
+        title.style.marginTop="10px";
+        title.innerHTML="<b>Suggested internships</b>";
+        box.appendChild(title);
+
+        suggestions.forEach(it=>{
+          const el=document.createElement("div");
+          el.className="intern";
+          el.innerHTML=`
+            <div>
+              <div class="title">${it.title}</div>
+              <div class="company">${it.company}</div>
+              <div class="tags">${it.requiredSkills.map(s=>`<span class='tag'>${s}</span>`).join("")}</div>
+            </div>
+            <button class="primary" onclick="apply('${it.internshipId}')">Apply</button>
+          `;
+          box.appendChild(el);
+        });
+      }
+
+      toast("No exact matches — showing suggestions");
+      return;
+    }
+
+    render(matched,"matches");
+    toast("Matches loaded (demo)");
+    return;
+  }
+}
+
+
+
+/* ========== APPLY ========== */
+async function apply(id){
+  const user=document.getElementById("queryUser").value.trim();
+
+  console.log("Calling AWS: POST /apply");
+  console.log("Payload:", {user,id});
+
+  if(DEMO){
+    toast("Applied (demo)");
+    return;
+  }
+}
+
+
+
+/* Load initial */
+loadInterns();
+loadApps();
+
+</script>
+
+</body>
+</html>
