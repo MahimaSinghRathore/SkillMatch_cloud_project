@@ -1,180 +1,272 @@
-SkillMatch
+# SkillMatch
 
-SkillMatch is a simple web application that helps match students with internships based on their skills and interests. The front end is a single HTML file, and the backend runs on AWS using Lambda, API Gateway and DynamoDB.
+SkillMatch is a serverless web application that helps connect students with internship opportunities based on their skills and interests. The project demonstrates how AWS services such as Lambda, API Gateway, and DynamoDB can be used to build a scalable internship recommendation platform.
 
-This project is designed as a lightweight demo that shows how a serverless architecture can power a real matching system.
+The frontend is built using HTML, CSS, and JavaScript, while the backend consists of AWS Lambda functions that interact with DynamoDB through Amazon API Gateway.
 
-Features
+---
 
-Create and update user profiles
+## Features
 
-Add internships with required skills
+- Create and update student profiles
+- Add internship opportunities
+- View available internships
+- Match students with internships based on their skills
+- Apply for internships
+- View submitted applications
+- Single-page responsive user interface
+- Serverless backend using AWS services
 
-Fetch all internships
+---
 
-Match a user with the most relevant internships
+## Technologies Used
 
-Apply for an internship
+### Frontend
 
-View all applications
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
 
-Works directly with AWS API Gateway + Lambda
+### Backend
 
-Fully client-side UI built with plain HTML, CSS and JavaScript
+- AWS Lambda
+- Amazon API Gateway
 
-Tech Stack
+### Database
 
-Frontend:
-HTML, CSS, Vanilla JavaScript
+- Amazon DynamoDB
 
-Backend:
-AWS Lambda
-AWS API Gateway
-AWS DynamoDB
-AWS S3 (optional for hosting)
+### Cloud
 
-Project Structure
+- AWS
+
+---
+
+## Project Structure
+
+```text
 SkillMatch/
-│── index.html     # Main UI (single page app)
-│── README.md      # Documentation
+│
+├── index.html
+├── Lambda_function_create_or_update_profile.py
+├── Lambda_function_get_profile
+├── Lambda_function_create_internship.py
+├── Lambda_function_list_internship.py
+├── Lambda_function_match_for_user.py
+├── Lambda_function_apply_internship.py
+└── README.md
+```
 
+---
 
-All logic for UI interactions and API calls exists inside the index.html file.
+## System Architecture
 
-How It Works
+```text
+                User
+                  │
+                  ▼
+HTML • CSS • JavaScript Frontend
+                  │
+                  ▼
+          Amazon API Gateway
+                  │
+                  ▼
+          AWS Lambda Functions
+                  │
+                  ▼
+         Amazon DynamoDB
+```
 
-The user interacts with the UI in index.html.
+---
 
-Each button triggers a JavaScript fetch() call to your API Gateway URL.
+## How It Works
 
-API Gateway routes the call to Lambda functions.
+1. Students create their profiles with skills and interests.
+2. Organizations add internship opportunities.
+3. Internship details are stored in DynamoDB.
+4. Lambda functions retrieve and match internships.
+5. Students can apply for internships.
+6. Applications are stored for later retrieval.
 
-Lambda reads/writes data in DynamoDB tables:
+---
 
-Profiles
+## AWS Lambda Functions
 
-Internships
+The project contains separate Lambda functions for each operation.
 
-Applications
+| Function | Purpose |
+|----------|---------|
+| Create/Update Profile | Stores student profiles |
+| Get Profile | Retrieves user profile |
+| Create Internship | Adds internship opportunities |
+| List Internship | Retrieves all internships |
+| Match for User | Matches internships based on user skills |
+| Apply Internship | Stores internship applications |
 
-The response is shown instantly in the UI.
+---
 
-API Base URL
+## API Endpoints
 
-Inside the index.html, update this line with your API Gateway base URL:
+### POST `/profiles`
 
-const API_BASE = "https://your-api-url.execute-api.region.amazonaws.com/prod";
+Create or update a student profile.
 
-API Endpoints
-1. Save or Update Profile
-
-POST /profiles
-Body:
-
+```json
 {
-  "userId": "mahima001",
-  "name": "Mahima",
-  "skills": ["aws", "cpp"],
-  "interests": ["backend", "cloud"]
+  "userId":"mahima001",
+  "name":"Mahima",
+  "skills":["aws","cpp"],
+  "interests":["backend","cloud"]
 }
+```
 
-2. Add Internship
+---
 
-POST /internships
-Body:
+### POST `/internships`
 
+Create a new internship.
+
+```json
 {
-  "title": "Cloud Intern",
-  "requiredSkills": ["aws"],
-  "company": "TechCorp"
+  "title":"Cloud Intern",
+  "company":"TechCorp",
+  "requiredSkills":["aws"]
 }
+```
 
-3. Get All Internships
+---
 
-GET /internships
+### GET `/internships`
 
-4. Get Matches for a User
+Returns all internships.
 
-GET /match/{userId}
+---
 
-5. Apply for Internship
+### GET `/match/{userId}`
 
-POST /apply
-Body:
+Returns internship recommendations for a student.
 
+---
+
+### POST `/apply`
+
+Apply for an internship.
+
+```json
 {
-  "userId": "mahima001",
-  "internshipId": "intern123"
+  "userId":"mahima001",
+  "internshipId":"intern123"
 }
+```
 
-6. Get All Applications
+---
 
-GET /applications
+### GET `/applications`
 
-Running Locally
+Returns all submitted applications.
 
-You can open the project locally without any server.
+---
 
-Method 1: Direct open
+## Running the Project
 
-Just double-click index.html.
+Clone the repository.
 
-Method 2: Start simple server
+```bash
+git clone https://github.com/MahimaSinghRathore/SkillMatch.git
+```
+
+Open
+
+```
+index.html
+```
+
+in a modern web browser.
+
+Alternatively, start a local server.
+
+```bash
 python -m http.server 8000
+```
 
+Then visit
 
-Then open:
+```
+http://localhost:8000
+```
 
-http://localhost:8000/index.html
+---
 
-Deploying to AWS
+## Backend Setup
 
-To deploy the backend:
+Configure the following AWS services.
 
-Create DynamoDB tables:
+### DynamoDB Tables
 
-Profiles (Partition key: userId)
+- Profiles
+- Internships
+- Applications
 
-Internships (Partition key: internshipId)
+### AWS Lambda
 
-Applications (Partition key: applicationId)
+Deploy each Lambda function individually.
 
-Create Lambda functions:
+### API Gateway
 
-Save profile
+Create REST API endpoints and connect them to the corresponding Lambda functions.
 
-Add internship
+Update the API Gateway URL inside:
 
-Get internships
+```javascript
+const API_BASE = "YOUR_API_GATEWAY_URL";
+```
 
-Get matches
+---
 
-Apply
+## Applications
 
-Get applications
+- Internship Recommendation Platform
+- Campus Placement Portal
+- Career Development Platform
+- Student Recruitment System
+- Skill-Based Job Matching
 
-Create API Gateway REST API with routes matching the endpoints.
+---
 
-Deploy the API and copy its base URL into API_BASE.
+## Future Enhancements
 
-How to Use the UI
+- AWS Cognito Authentication
+- Resume Upload
+- Email Notifications
+- Admin Dashboard
+- Company Portal
+- Search and Filters
+- Better Recommendation Algorithm
+- Application Status Tracking
 
-Fill out profile details and click Save Profile
+---
 
-Add internships from the Add Internship section
+## Project Status
 
-Enter a userId and click Get Matches to see recommended internships
+- Frontend implementation completed.
+- Backend Lambda functions implemented.
+- Designed for deployment on AWS using API Gateway and DynamoDB.
+- Cloud deployment is currently under development.
 
-Click Apply inside a matching internship
+---
 
-View all applications in the Applications section
+## Author
 
-Future Improvements
+**Mahima Singh**
 
-Add authentication (AWS Cognito)
+B.Tech Computer Science Engineering
 
-Better ranking algorithm for matching
+Jaypee University of Information Technology (JUIT)
 
-Pagination and filters
+GitHub: https://github.com/MahimaSinghRathore
 
-Email notifications after application
+---
+
+## License
+
+This project was developed for educational purposes to demonstrate serverless web application development using AWS cloud services.
